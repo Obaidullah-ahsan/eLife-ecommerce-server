@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
-require('dotenv').config()
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -24,6 +24,39 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const productsCollection = client
+      .db("eLife_ecommerce")
+      .collection("products");
+
+    app.get("/products", async (req, res) => {
+      const search = req.query.search;
+      const brand = req.query.brand;
+      const category = req.query.category;
+
+      let query = {};
+
+      if (search) {
+        query.product_name = { $regex: search, $options: "i" };
+      }
+      if (brand) {
+        query.brand = brand;
+      }
+      if (category) {
+        query.product_category = category;
+      }
+
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/products/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = { product_category: category };
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -31,7 +64,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
