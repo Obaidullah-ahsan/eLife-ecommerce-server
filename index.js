@@ -70,6 +70,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/cart", async (req, res) => {
+      const result = await cartCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post("/cart", async (req, res) => {
       const cartData = req.body;
       const query = { productId: cartData.productId };
