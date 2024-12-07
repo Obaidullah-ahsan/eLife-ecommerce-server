@@ -30,6 +30,9 @@ async function run() {
       .collection("products");
     const userCollection = client.db("eLife_ecommerce").collection("users");
     const cartCollection = client.db("eLife_ecommerce").collection("cart");
+    const wishlistCollection = client
+      .db("eLife_ecommerce")
+      .collection("wishlist");
 
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -70,19 +73,45 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/cart", async (req, res) => {
-      const result = await cartCollection.find().toArray();
+    app.get("/cart/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
 
     app.post("/cart", async (req, res) => {
       const cartData = req.body;
-      const query = { productId: cartData.productId };
+      const query = {
+        productId: cartData.productId,
+        userEmail: cartData.userEmail,
+      };
       const isExist = await cartCollection.findOne(query);
       if (isExist) {
         return res.send({ Message: "Product already exist", insertedId: null });
       }
       const result = await cartCollection.insertOne(cartData);
+      res.send(result);
+    });
+
+    app.get("/wishlist/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const result = await wishlistCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/wishlist", async (req, res) => {
+      const wishlistData = req.body;
+      const query = {
+        productId: wishlistData.productId,
+        userEmail: wishlistData.userEmail,
+      };
+      const isExist = await wishlistCollection.findOne(query);
+      if (isExist) {
+        return res.send({ Message: "Product already exist", insertedId: null });
+      }
+      const result = await wishlistCollection.insertOne(wishlistData);
       res.send(result);
     });
 
