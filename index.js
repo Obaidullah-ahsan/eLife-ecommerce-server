@@ -28,6 +28,18 @@ async function run() {
     const productsCollection = client
       .db("eLife_ecommerce")
       .collection("products");
+    const userCollection = client.db("eLife_ecommerce").collection("users");
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ Message: "User already exist", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
     app.get("/products", async (req, res) => {
       const search = req.query.search;
