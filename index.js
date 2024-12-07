@@ -29,6 +29,7 @@ async function run() {
       .db("eLife_ecommerce")
       .collection("products");
     const userCollection = client.db("eLife_ecommerce").collection("users");
+    const cartCollection = client.db("eLife_ecommerce").collection("cart");
 
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -66,6 +67,17 @@ async function run() {
       const category = req.params.category;
       const query = { product_category: category };
       const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cartData = req.body;
+      const query = { productId: cartData.productId };
+      const isExist = await cartCollection.findOne(query);
+      if (isExist) {
+        return res.send({ Message: "Product already exist", insertedId: null });
+      }
+      const result = await cartCollection.insertOne(cartData);
       res.send(result);
     });
 
